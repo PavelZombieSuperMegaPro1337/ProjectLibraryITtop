@@ -1,38 +1,42 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
 
+// Максимальное количество всего
 #define MAX_KNIG 100
 #define MAX_LUDEY 50
 #define MAX_OPER 200
 
+// Структура для книжки
 struct Kniga {
     int id;
     char nazvanie[50];
     char avtor[50];
     int god;
-    int est;          // ñêîëüêî åñòü â íàëè÷èè
-    int vzyato;       // ñêîëüêî âçÿòî
+    int est;          // сколько есть в наличии
+    int vzyato;       // сколько взято
 };
 
-// Ñòðóêòóðà äëÿ ÷èòàòåëÿ
+// Структура для читателя
 struct Chel {
     int id;
     char imya[30];
     char fam[30];
     int kartochka;
-    int skolko_vzyal; // ñêîëüêî êíèã íà ðóêàõ
+    int skolko_vzyal; // сколько книг сейчас у него
 };
 
-// Ñòðóêòóðà äëÿ âûäà÷è
+// Структура для выдачи
 struct Vydacha {
     int id_knigi;
     int id_chel;
-    int data;        // óïðîùåííàÿ äàòà (äåíü ìåñÿöà)
-    int vernul;      // 0 - íå âåðíóë, 1 - âåðíóë
+    int data;        // упрощенная дата (день месяца)
+    int vernul;      // 0 - не вернул, 1 - вернул
 };
 
-// ãëîáàë ïåðåìåííûå
+// Глобальные переменные (так проще)
 Kniga knigi[MAX_KNIG];
 Chel ludi[MAX_LUDEY];
 Vydacha oper[MAX_OPER];
@@ -40,68 +44,68 @@ int kolvo_knig = 0;
 int kolvo_ludey = 0;
 int kolvo_oper = 0;
 
-// Ôóíêöèÿ î÷èñòêè áóôåðà
+// Функция очистки буфера
 void ochistit() {
     while (getchar() != '\n');
 }
 
-// Ïîêàçàòü ìåíþ
+// Показать меню
 void pokazat_menu() {
-    printf("\n=== ÁÈÁËÈÎÒÅÊÀ ===\n");
-    printf("1. Äîáàâèòü êíèãó\n");
-    printf("2. Ïîêàçàòü âñå êíèãè\n");
-    printf("3. Äîáàâèòü ÷èòàòåëÿ\n");
-    printf("4. Ïîêàçàòü âñåõ ÷èòàòåëåé\n");
-    printf("5. Âûäàòü êíèãó\n");
-    printf("6. Âåðíóòü êíèãó\n");
-    printf("7. Ñîõðàíèòü â ôàéë\n");
-    printf("8. Çàãðóçèòü èç ôàéëà\n");
-    printf("0. Âûéòè\n");
-    printf("Âûáåðèòå: ");
+    printf("\n=== БИБЛИОТЕКА ===\n");
+    printf("1. Добавить книгу\n");
+    printf("2. Показать все книги\n");
+    printf("3. Добавить читателя\n");
+    printf("4. Показать всех читателей\n");
+    printf("5. Выдать книгу\n");
+    printf("6. Вернуть книгу\n");
+    printf("7. Сохранить в файл\n");
+    printf("8. Загрузить из файла\n");
+    printf("0. Выйти\n");
+    printf("Выберите: ");
 }
 
-// Äîáàâèòü êíèæêó
+// Добавить книжку
 void dobavit_knigu() {
     if (kolvo_knig >= MAX_KNIG) {
-        printf("Ñëèøêîì ìíîãî êíèã!\n");
+        printf("Слишком много книг!\n");
         return;
     }
 
-    printf("\n--- Íîâàÿ êíèæêà ---\n");
+    printf("\n--- Новая книга ---\n");
 
     knigi[kolvo_knig].id = kolvo_knig + 1;
 
-    printf("Íàçâàíèå: ");
+    printf("Название: ");
     fgets(knigi[kolvo_knig].nazvanie, 50, stdin);
     knigi[kolvo_knig].nazvanie[strlen(knigi[kolvo_knig].nazvanie) - 1] = '\0';
 
-    printf("Àâòîð: ");
+    printf("Автор: ");
     fgets(knigi[kolvo_knig].avtor, 50, stdin);
     knigi[kolvo_knig].avtor[strlen(knigi[kolvo_knig].avtor) - 1] = '\0';
 
-    printf("Ãîä: ");
+    printf("Год: ");
     scanf("%d", &knigi[kolvo_knig].god);
 
-    printf("Ñêîëüêî øòóê: ");
+    printf("Сколько штук: ");
     scanf("%d", &knigi[kolvo_knig].est);
 
     knigi[kolvo_knig].vzyato = 0;
     kolvo_knig++;
 
-    printf("Êíèæêà äîáàâëåíà! ID=%d\n", kolvo_knig);
+    printf("Книга добавлена! ID=%d\n", kolvo_knig);
     ochistit();
 }
 
-// Ïîêàçàòü âñå êíèæêè
+// Показать все книги
 void pokazat_knigi() {
-    printf("\n--- Âñå êíèãè ---\n");
+    printf("\n--- Все книги ---\n");
     if (kolvo_knig == 0) {
-        printf("Êíèã ïîêà íåò\n");
+        printf("Книг пока нет\n");
         return;
     }
 
     for (int i = 0; i < kolvo_knig; i++) {
-        printf("%d. %s (àâòîð: %s) - %d øò, ñâîáîäíî: %d\n",
+        printf("%d. %s (автор: %s) - %d шт, свободно: %d\n",
             knigi[i].id,
             knigi[i].nazvanie,
             knigi[i].avtor,
@@ -110,45 +114,45 @@ void pokazat_knigi() {
     }
 }
 
-// Äîáàâèòü ÷èòàòåëÿ
+// Добавить читателя
 void dobavit_chitatelya() {
     if (kolvo_ludey >= MAX_LUDEY) {
-        printf("Ñëèøêîì ìíîãî ÷èòàòåëåé!\n");
+        printf("Слишком много читателей!\n");
         return;
     }
 
-    printf("\n--- Íîâûé ÷èòàòåëü ---\n");
+    printf("\n--- Новый читатель ---\n");
 
     ludi[kolvo_ludey].id = kolvo_ludey + 1;
 
-    printf("Èìÿ: ");
+    printf("Имя: ");
     fgets(ludi[kolvo_ludey].imya, 30, stdin);
     ludi[kolvo_ludey].imya[strlen(ludi[kolvo_ludey].imya) - 1] = '\0';
 
-    printf("Ôàìèëèÿ: ");
+    printf("Фамилия: ");
     fgets(ludi[kolvo_ludey].fam, 30, stdin);
     ludi[kolvo_ludey].fam[strlen(ludi[kolvo_ludey].fam) - 1] = '\0';
 
-    printf("Íîìåð êàðòî÷êè: ");
+    printf("Номер карточки: ");
     scanf("%d", &ludi[kolvo_ludey].kartochka);
 
     ludi[kolvo_ludey].skolko_vzyal = 0;
     kolvo_ludey++;
 
-    printf("×èòàòåëü äîáàâëåí! ID=%d\n", kolvo_ludey);
+    printf("Читатель добавлен! ID=%d\n", kolvo_ludey);
     ochistit();
 }
 
-// Ïîêàçàòü âñåõ ÷èòàòåëåé
+// Показать всех читателей
 void pokazat_chitateley() {
-    printf("\n--- Âñå ÷èòàòåëè ---\n");
+    printf("\n--- Все читатели ---\n");
     if (kolvo_ludey == 0) {
-        printf("×èòàòåëåé ïîêà íåò\n");
+        printf("Читателей пока нет\n");
         return;
     }
 
     for (int i = 0; i < kolvo_ludey; i++) {
-        printf("%d. %s %s (êàðòî÷êà: %d) - êíèã íà ðóêàõ: %d\n",
+        printf("%d. %s %s (карточка: %d) - книг на руках: %d\n",
             ludi[i].id,
             ludi[i].imya,
             ludi[i].fam,
@@ -157,172 +161,174 @@ void pokazat_chitateley() {
     }
 }
 
-// Âûäàòü êíèæêó
+// Выдать книгу
 void vydat_knigu() {
     int id_kn, id_ch;
 
-    printf("\n--- Âûäà÷à êíèãè ---\n");
+    printf("\n--- Выдача книжки ---\n");
 
-    printf("ID êíèãè: ");
+    printf("ID книжки: ");
     scanf("%d", &id_kn);
 
-    printf("ID ÷èòàòåëÿ: ");
+    printf("ID читателя: ");
     scanf("%d", &id_ch);
 
     ochistit();
 
-    // Ïðîâåðÿåì
+    // Проверяем
     if (id_kn < 1 || id_kn > kolvo_knig) {
-        printf("Íåò òàêîé êíèãè!\n");
+        printf("Нет такой книжки!\n");
         return;
     }
 
     if (id_ch < 1 || id_ch > kolvo_ludey) {
-        printf("Íåò òàêîãî ÷èòàòåëÿ!\n");
+        printf("Нет такого читателя!\n");
         return;
     }
 
-    // Èíäåêñû â ìàññèâå
+    // Индексы в массиве
     int idx_kn = id_kn - 1;
     int idx_ch = id_ch - 1;
 
-    // Ïðîâåðÿåì åñòü ëè ñâîáîäíûå
+    // Проверяем есть ли свободные
     if (knigi[idx_kn].est - knigi[idx_kn].vzyato <= 0) {
-        printf("Íåò ñâîáîäíûõ ýêçåìïëÿðîâ ýòîé êíèæêè!\n");
+        printf("Нет свободных экземпляров этой книжки!\n");
         return;
     }
 
-    // Ïðîâåðÿåì íå ìíîãî ëè ó ÷èòàòåëÿ
+    // Проверяем не много ли у читателя
     if (ludi[idx_ch].skolko_vzyal >= 5) {
-        printf("Ó ÷èòàòåëÿ óæå 5 êíèã! Áîëüøå íåëüçÿ.\n");
+        printf("У читателя уже 5 книг! Больше нельзя.\n");
         return;
     }
 
-    // Âûäàåì
+    // Выдаем
     knigi[idx_kn].vzyato++;
     ludi[idx_ch].skolko_vzyal++;
 
-    // Çàïîìèíàåì îïåðàöèþ
+    // Запоминаем операцию
     oper[kolvo_oper].id_knigi = id_kn;
     oper[kolvo_oper].id_chel = id_ch;
-    oper[kolvo_oper].data = 15; // ïðîñòî ïðèìåð äàòû
+    oper[kolvo_oper].data = 15; // просто пример даты
     oper[kolvo_oper].vernul = 0;
     kolvo_oper++;
 
-    printf("Êíèãà âûäàíà óñïåøíî!\n");
+    printf("Книжка выдана успешно!\n");
 }
 
-// Âåðíóòü êíèæêó
+// Вернуть книжку
 void vernut_knigu() {
     int id_kn, id_ch;
 
-    printf("\n--- Âîçâðàò êíèãè ---\n");
+    printf("\n--- Возврат книжки ---\n");
 
-    printf("ID êíãè: ");
+    printf("ID книжки: ");
     scanf("%d", &id_kn);
 
-    printf("ID ÷èòàòåëÿ: ");
+    printf("ID читателя: ");
     scanf("%d", &id_ch);
 
     ochistit();
 
-    // Ïðîâåðÿåì
+    // Проверяем
     if (id_kn < 1 || id_kn > kolvo_knig) {
-        printf("Íåò òàêîé êíèãè!\n");
+        printf("Нет такой книги!\n");
         return;
     }
 
     if (id_ch < 1 || id_ch > kolvo_ludey) {
-        printf("Íåò òàêîãî ÷èòàòåëÿ!\n");
+        printf("Нет такого читателя!\n");
         return;
     }
 
-    // Èíäåêñû
+    // Индексы
     int idx_kn = id_kn - 1;
     int idx_ch = id_ch - 1;
 
-    // Ïðîâåðÿåì áûëà ëè òàêàÿ âûäà÷à
+    // Проверяем была ли такая выдача
     int naideno = 0;
     for (int i = 0; i < kolvo_oper; i++) {
         if (oper[i].id_knigi == id_kn &&
             oper[i].id_chel == id_ch &&
             oper[i].vernul == 0) {
-            oper[i].vernul = 1; // îòìå÷àåì êàê âîçâðàùåííóþ
+            oper[i].vernul = 1; // отмечаем как возвращенную
             naideno = 1;
             break;
         }
     }
 
     if (!naideno) {
-        printf("Òàêîé âûäà÷è íå íàéäåíî!\n");
+        printf("Такой выдачи не найдено!\n");
         return;
     }
 
-    // Îáíîâëÿåì ñ÷åò÷èêè
+    // Обновляем счетчики
     if (knigi[idx_kn].vzyato > 0) knigi[idx_kn].vzyato--;
     if (ludi[idx_ch].skolko_vzyal > 0) ludi[idx_ch].skolko_vzyal--;
 
-    printf("Êíèæêà âîçâðàùåíà!\n");
+    printf("Книжка возвращена!\n");
 }
 
-// Ñîõðàíèòü â ôàéë (î÷åíü ïðîñòî)
+// Сохранить в файл
 void sohranit() {
     FILE* f;
 
-    // Ñîõðàíÿåì êíèæêè
+    // Сохраняем книги
     f = fopen("knigi.dat", "wb");
     if (f != NULL) {
         fwrite(&kolvo_knig, sizeof(int), 1, f);
         fwrite(knigi, sizeof(Kniga), kolvo_knig, f);
         fclose(f);
-        printf("Êíèãè ñîõðàíåíû\n");
+        printf("Книги сохранены\n");
     }
 
-    // Ñîõðàíÿåì ÷èòàòåëåé
+    // Сохраняем читателей
     f = fopen("ludi.dat", "wb");
     if (f != NULL) {
         fwrite(&kolvo_ludey, sizeof(int), 1, f);
         fwrite(ludi, sizeof(Chel), kolvo_ludey, f);
         fclose(f);
-        printf("×èòàòåëè ñîõðàíåíû\n");
+        printf("Читатели сохранены\n");
     }
 }
 
-// Çàãðóçèòü èç ôàéëà
+// Загрузить из файла
 void zagruzit() {
     FILE* f;
 
-    // Çàãðóæàåì êíèæêè
+    // Загружаем книги
     f = fopen("knigi.dat", "rb");
     if (f != NULL) {
         fread(&kolvo_knig, sizeof(int), 1, f);
         fread(knigi, sizeof(Kniga), kolvo_knig, f);
         fclose(f);
-        printf("Çàãðóæåíî êíèã: %d\n", kolvo_knig);
+        printf("Загружено книг: %d\n", kolvo_knig);
     }
     else {
-        printf("Ôàéë ñ êíèæêàìè íå íàéäåí\n");
+        printf("Файл с книгами не найден\n");
     }
 
-    // Çàãðóæàåì ÷èòàòåëåé
+    // Загружаем читателей
     f = fopen("ludi.dat", "rb");
     if (f != NULL) {
         fread(&kolvo_ludey, sizeof(int), 1, f);
         fread(ludi, sizeof(Chel), kolvo_ludey, f);
         fclose(f);
-        printf("Çàãðóæåíî ÷èòàòåëåé: %d\n", kolvo_ludey);
+        printf("Загружено читателей: %d\n", kolvo_ludey);
     }
     else {
-        printf("Ôàéë ñ ÷èòàòåëÿìè íå íàéäåí\n");
+        printf("Файл с читателями не найден\n");
     }
 }
 
-// Ãëàâíàÿ ôóíêöèÿ
+// Главная функция
 int main() {
+    SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
     int vibor;
 
-    printf("ÁÈÁËÈÎÒÅ×ÍÀß ÑÈÑÒÅÌÀ v1.0\n");
-    printf("Àâòîðû: Àë¸õèí Ïàâåë è Ãàíè÷åâ Àäðåé\n\n");
+    printf("БИБЛИОТЕЧНАЯ СИСТЕМА v1.0\n");
+    printf("Автор: Алёхин Павел \n\n");
 
     do {
         pokazat_menu();
@@ -339,15 +345,14 @@ int main() {
         case 7: sohranit(); break;
         case 8: zagruzit(); break;
         case 0:
-            printf("Ñîõðàíÿþ ïåðåä âûõîäîì...\n");
+            printf("Сохраняю перед выходом...\n");
             sohranit();
-            printf("Äî ñâèäàíèÿ!\n");
+            printf("До свидания!\n");
             break;
         default:
-            printf("Íåâåðíûé âûáîð! Ïîïðîáóéòå ñíîâà.\n");
+            printf("Неверный выбор! Попробуйте снова.\n");
         }
     } while (vibor != 0);
 
     return 0;
-
 }
